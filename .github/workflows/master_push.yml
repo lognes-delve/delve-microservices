@@ -50,6 +50,11 @@ jobs:
       - name: Setup docker buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Print cwd as debug
+        run : |
+          pwd
+          find . -type d
+
       - name: Build & Push
         uses: docker/build-push-action@v6
         with:
