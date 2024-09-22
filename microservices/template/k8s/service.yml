@@ -5,9 +5,9 @@ metadata:
   namespace: default
 spec:
   selector:
-    app: template-ms-svc
+    app: template-ms
   type: ClusterIP
   ports:
-  - name: template-ms-svc
+  - name: http
     port: 8080
     targetPort: 8080

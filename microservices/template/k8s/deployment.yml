@@ -1,14 +1,20 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: template-ms
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: template-ms
   template:
     metadata:
       labels:
-        editor: vscode
+        app: template-ms
     spec:
       containers:
       - name: template
         image: registry.lognes.dev/template-ms:latest
+        imagePullPolicy: "Always"
+        ports:
+        - containerPort: 8080
