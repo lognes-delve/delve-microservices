@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: template
-        image: registry.lognes.dev/template:latest
+        image: registry.lognes.dev/microservices/template:latest
         imagePullPolicy: "Always"
         ports:
         - containerPort: 8080
