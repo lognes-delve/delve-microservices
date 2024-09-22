@@ -1,0 +1,14 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: template-ms
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        editor: vscode
+    spec:
+      containers:
+      - name: template
+        image: registry.lognes.dev/template-ms:latest

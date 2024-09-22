@@ -1,0 +1,19 @@
+# See more at https://istio.io/docs/reference/config/networking/virtual-service/
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: template-ms-vs
+spec:
+  hosts:
+  - delve.lognes.dev
+  gateways:
+  - delve-gateway
+  http:
+  - match:
+    - uri:
+      prefix: "/template"
+    rewrite:
+      uri: "/"
+    route:
+    - destination:
+        host: template-ms-vs.default.svc.cluster.local

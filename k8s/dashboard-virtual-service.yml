@@ -1,0 +1,20 @@
+# See more at https://istio.io/docs/reference/config/networking/virtual-service/
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: kdash.lognes.dev
+spec:
+  hosts:
+  - kdash.lognes.dev
+  gateways:
+  - delve-gateway
+  tls:
+  - match:
+    - port: 8443
+      sniHosts:
+      - kdash.lognes.dev
+    route:
+    - destination:
+        host: kubernetes-dashboard.kube-system.svc.cluster.local
+        port:
+          number: 8443

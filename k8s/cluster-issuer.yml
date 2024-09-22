@@ -1,0 +1,46 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: delve-cert
+  namespace: istio-system
+spec:
+  secretName: delve-tls
+
+  duration: 2160h
+  renewBefore: 360h
+
+  isCA: false
+
+  privateKey:
+    algorithm: RSA 
+    encoding: PKCS1
+    size: 2048
+
+  usages: 
+    - server auth
+    - client auth
+
+  dnsNames:
+    - lognes.dev
+    - delve.lognes.dev
+    - registry.lognes.dev
+    - kdash.lognes.dev
+
+  issuerRef:
+    name: letsencrypt-staging-cluster
+    kind: ClusterIssuer
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-staging-cluster
+  namespace: istio-system
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory 
+    privateKeySecretRef:
+      name: letsencrypt-staging-cluster
+    solvers:  
+    - http01:
+        ingress:
+          class: istio
