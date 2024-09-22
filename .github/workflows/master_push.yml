@@ -37,14 +37,13 @@ jobs:
     if: ${{ needs.find-changes.outputs.changed_directories != '' }}
     needs: [find-changes]
 
-    defaults:
-      run:
-        working-directory: ${{ matrix.dir }}
-
     strategy:
       matrix: ${{fromJson(needs.find-changes.outputs.changed_directories)}}
 
     steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v2
       
       # This probably wont do much for this but it was *recommended*
       - name: Setup docker buildx
