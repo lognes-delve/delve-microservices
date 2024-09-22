@@ -6,6 +6,6 @@ app = FastAPI()
 @app.get("/")
 async def test_endpoint() -> JSONResponse:
     return JSONResponse(
-        {"ok" : True}
+        {"ok" : 1}
     )
 
