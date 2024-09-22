@@ -40,6 +40,10 @@ jobs:
     strategy:
       matrix: ${{fromJson(needs.find-changes.outputs.changed_directories)}}
 
+    defaults:
+      run:
+        working-directory: ${{ matrix.dir }}
+
     steps:
 
       - name: Checkout code
