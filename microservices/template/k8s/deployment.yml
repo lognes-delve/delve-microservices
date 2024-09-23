@@ -37,6 +37,9 @@ metadata:
 spec:
   imageRepositoryRef:
     name: template
+    filterTags:
+    pattern: '^master-(?P<ts>.*)'
+    extract: '$ts'
   policy:
-    semver:
-      range: ">=1.0.0"
+    numerical:
+      order: asc
