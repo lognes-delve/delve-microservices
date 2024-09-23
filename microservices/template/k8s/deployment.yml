@@ -37,7 +37,7 @@ metadata:
 spec:
   imageRepositoryRef:
     name: template
-    filterTags:
+  filterTags:
     pattern: '^master-(?P<ts>.*)'
     extract: '$ts'
   policy:
