@@ -1,45 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: template-ms
+  name: template-ms # REPLACE ME
   namespace: default
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: template-ms
+      app: template-ms # REPLACE ME
   template:
     metadata:
       labels:
-        app: template-ms
+        app: template-ms # REPLACE ME
     spec:
       containers:
-      - name: template
+      - name: template # REPLACE ME
         image: registry.lognes.dev/microservices/template:master-1727067203 # {"$imagepolicy": "flux-system:template-policy"}
         imagePullPolicy: "Always"
         ports:
         - containerPort: 8080
----
-apiVersion: image.toolkit.fluxcd.io/v1beta2
-kind: ImageRepository
-metadata:
-  name: template
-  namespace: flux-system
-spec:
-  image: registry.lognes.dev/microservices/template
-  interval: 5m0s
----
-apiVersion: image.toolkit.fluxcd.io/v1beta2
-kind: ImagePolicy
-metadata:
-  name: template-policy
-  namespace: flux-system
-spec:
-  imageRepositoryRef:
-    name: template
-  filterTags:
-    pattern: '^master-(?P<ts>.*)'
-    extract: '$ts'
-  policy:
-    numerical:
-      order: asc

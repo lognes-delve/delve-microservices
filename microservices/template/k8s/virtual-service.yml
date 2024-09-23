@@ -2,7 +2,7 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: template-ms-vs
+  name: template-ms-vs # REPLACE ME
   namespace: default
 spec:
   hosts:
@@ -12,11 +12,11 @@ spec:
   http:
   - match:
     - uri:
-        exact: "/template"
+        exact: "/template" # REPLACE ME
     - uri:
-        prefix: "/template/"
+        prefix: "/template/" # REPLACE ME
     rewrite:
       uri: "/"
     route:
     - destination:
-        host: template-ms-svc
+        host: template-ms-svc # REPLACE ME
