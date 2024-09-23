@@ -60,11 +60,11 @@ jobs:
 
       - name: Get current ts
         id: ts
-        run: echo "::set-output name=ts::$(ts +'%s')"
+        run: echo "{date}={$(date +'%s')}" >> $GITHUB_STATE
 
       - name: Build & Push
         uses: docker/build-push-action@v6
         with:
           context: ${{ matrix.dir }}
           push: true
-          tags: registry.lognes.dev/${{ matrix.dir }}:latest,registry.lognes.dev/${{ matrix.dir }}:master-${{ steps.ts.outputs.ts }}
+          tags: registry.lognes.dev/${{ matrix.dir }}:latest,registry.lognes.dev/${{ matrix.dir }}:master-${{ env.date }}
