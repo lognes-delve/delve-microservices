@@ -60,7 +60,7 @@ jobs:
 
       - name: Get current ts
         id: ts
-        run: echo "{date}={$(date +'%s')}" >> $GITHUB_STATE
+        run: echo "{date}={$(date +'%s')}" >> $GITHUB_ENV
 
       - name: Build & Push
         uses: docker/build-push-action@v6
