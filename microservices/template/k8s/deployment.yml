@@ -18,3 +18,24 @@ spec:
         imagePullPolicy: "Always"
         ports:
         - containerPort: 8080
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: template
+  namespace: flux-system
+spec:
+  image: registry.lognes.dev/microservices/template
+  interval: 5m0s
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: template-policy
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: template
+  policy:
+    semver:
+      range: ">=1.0.0"
