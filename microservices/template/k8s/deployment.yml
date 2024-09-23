@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: template-ms
+  namespace: default
 spec:
   replicas: 1
   selector:
@@ -14,7 +15,7 @@ spec:
     spec:
       containers:
       - name: template
-        image: registry.lognes.dev/microservices/template:latest
+        image: registry.lognes.dev/microservices/template:latest # {"$imagepolicy": "flux-system:template-policy"}
         imagePullPolicy: "Always"
         ports:
         - containerPort: 8080
