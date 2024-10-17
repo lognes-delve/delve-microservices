@@ -15,6 +15,6 @@ async def test_endpoint() -> JSONResponse:
     db_resp = await db.admin.command({"ping" : 1})
 
     return JSONResponse(
-        {"ok" : "True", "db" : db_resp, "m" : "users"}
+        {"ok" : "True", "db" : db_resp, "ms" : "users"}
     )
 
