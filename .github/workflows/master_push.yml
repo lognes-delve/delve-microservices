@@ -7,6 +7,7 @@ on:
 jobs:
 
   find-changes:
+    if: ${{ github.actor != 'fluxcdbot' }}
     outputs:
       changed_directories: ${{ steps.set-output.outputs.changed_directories }}
     name: Find Changes
