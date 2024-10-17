@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: template # REPLACE ME
-        image: registry.lognes.dev/microservices/template:master-1729192486 # {"$imagepolicy": "flux-system:template-policy"}
+        image: registry.lognes.dev/microservices/template:master-1729193073 # {"$imagepolicy": "flux-system:template-policy"}
         imagePullPolicy: "Always"
         ports:
         - containerPort: 8080
