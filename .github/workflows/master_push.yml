@@ -70,5 +70,5 @@ jobs:
           tags: |
             registry.lognes.dev/${{ matrix.dir }}:latest
             registry.lognes.dev/${{ matrix.dir }}:master-${{ env.date }}
-          secrets:
+          build-args: |
               GH_TOKEN=${{ secrets.GH_TOKEN }}
