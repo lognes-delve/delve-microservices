@@ -1,0 +1,23 @@
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: users # REPLACE ME
+  namespace: flux-system
+spec:
+  image: registry.lognes.dev/microservices/users # REPLACE ME
+  interval: 5m0s
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: users-policy # REPLACE ME
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: users # REPLACE ME (WITH IMAGE REPO NAME ABOVE)
+  filterTags:
+    pattern: '^master-(?P<ts>.*)'
+    extract: '$ts'
+  policy:
+    numerical:
+      order: asc

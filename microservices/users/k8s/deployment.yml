@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: users-ms # REPLACE ME
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: users-ms # REPLACE ME
+  template:
+    metadata:
+      labels:
+        app: users-ms # REPLACE ME
+    spec:
+      containers:
+      - name: template # REPLACE ME
+        image: registry.lognes.dev/microservices/template:master-1729192486 # {"$imagepolicy": "flux-system:template-policy"}
+        imagePullPolicy: "Always"
+        ports:
+        - containerPort: 8080
+        envFrom:
+        - configMapRef:
+            name: delve-cm
