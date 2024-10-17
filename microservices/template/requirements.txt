@@ -1,3 +1,5 @@
 fastapi
 uvicorn
 gunicorn
+
+-e git+https://${GH_TOKEN}@github.com/lognes-delve/delve-common.git@master#egg=delve_common
