@@ -1,0 +1,14 @@
+# RequestAuthentication policy for validating JWT tokens
+apiVersion: security.istio.io/v1beta1
+kind: RequestAuthentication
+metadata:
+  name: req-auth-jwt-required
+  namespace: istio-system
+spec:
+  jwtRules:
+    - issuer: https://securetoken.google.com/delve-fd0d3
+      jwksUri: https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com
+      forwardOriginalToken: true
+      outputClaimToHeaders:
+        - header: X-UserInfo
+          claim: user_id
