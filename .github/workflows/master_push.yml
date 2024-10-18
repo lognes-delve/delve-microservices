@@ -7,7 +7,6 @@ on:
 jobs:
 
   find-changes:
-    if: ${{ github.actor != 'fluxcdbot' }}
     outputs:
       changed_directories: ${{ steps.set-output.outputs.changed_directories }}
     name: Find Changes
@@ -17,6 +16,14 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
+    - name: Check commit author
+      run: |
+        AUTHOR=$(git log -1 --pretty=format:'%an')
+        if [ "$AUTHOR" = "fluxcdbot" ]; then
+          echo "Commit made by fluxcdbot, skipping job."
+          exit 0
+        fi
+      
     - name: Get changed files
       id: changed-files
       uses: tj-actions/changed-files@v44
