@@ -2,6 +2,7 @@ from datetime import UTC, datetime
 from typing import Annotated, Optional, Union, NewType
 from fastapi import FastAPI, Depends
 from fastapi.security import APIKeyHeader
+from fastapi.middleware.cors import CORSMiddleware
 import firebase_admin.auth
 from starlette.responses import JSONResponse
 from bson import ObjectId
@@ -23,6 +24,14 @@ from .utils import ensure_vacant_username
 app = FastAPI()
 
 X_USER_HEADER = APIKeyHeader(name="X-UserInfo")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class EMPTY(BaseModel): pass # sentinel class
 
