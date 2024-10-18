@@ -16,18 +16,8 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Check commit author
-      run: |
-        AUTHOR=$(git log -1 --pretty=format:'%an')
-        if [ "$AUTHOR" = "fluxcdbot" ]; then
-          echo "Commit made by fluxcdbot, skipping job."
-          exit 1
-        fi
-      continue-on-error: true
-      
     - name: Get changed files
       id: changed-files
-      if: ${{ success() }}
       uses: tj-actions/changed-files@v44
       with:
         dir_names: true
