@@ -202,7 +202,7 @@ async def update_user(
 
 @app.get("/{user_id}")
 async def get_user(
-    x_user : Annotated[str, Depends(X_USER_HEADER)], # basically just requires an authenticated user from service mesh
+    x_user : Annotated[str, Depends(X_USER_HEADER)], # basically just requires an authenticated user from service mesh.
     user_id : str
 ) -> User:
     """Retrieves a user record"""
