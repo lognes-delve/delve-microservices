@@ -1,0 +1,22 @@
+# See more at https://istio.io/docs/reference/config/networking/virtual-service/
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: community-ms-vs # REPLACE ME
+  namespace: default
+spec:
+  hosts:
+  - delve.lognes.dev
+  gateways:
+  - delve-gateway
+  http:
+  - match:
+    - uri:
+        exact: "/community" # REPLACE ME
+    - uri:
+        prefix: "/community/" # REPLACE ME
+    rewrite:
+      uri: "/"
+    route:
+    - destination:
+        host: community-ms-svc # REPLACE ME

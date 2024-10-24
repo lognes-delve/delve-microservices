@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: community-ms # REPLACE ME
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: community-ms # REPLACE ME
+  template:
+    metadata:
+      labels:
+        app: community-ms # REPLACE ME
+    spec:
+      containers:
+      - name: community # REPLACE ME
+        image: registry.lognes.dev/microservices/community:latest # {"$imagepolicy": "flux-system:community-policy"}
+        imagePullPolicy: "Always"
+        ports:
+        - containerPort: 8080
+        envFrom:
+        - configMapRef:
+            name: delve-cm
