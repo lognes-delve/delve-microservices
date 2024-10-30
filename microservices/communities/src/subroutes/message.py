@@ -22,8 +22,9 @@ async def create_new_message() -> Message:
 async def get_channel_messages() -> List[Message]:
     return # TODO:
 
+# TODO: Doing this later as it is not imperative to be finished right away
 @router.get("/{community_id}/channels/{channel_id}/messages/search")
-async def semantic_message_search() -> List[Message]:
+async def message_search() -> List[Message]:
     return # TODO:
 
 @router.get("/{community_id}/channels/{channel_id}/messages/{message_id}")

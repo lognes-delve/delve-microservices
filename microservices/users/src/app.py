@@ -19,7 +19,7 @@ from delve_common._types._dtos import User
 from delve_common.exceptions import DelveHTTPException
 
 from .models import UserRegistration
-from .utils import ensure_vacant_username
+from .utils import ensure_vacant_username, objectid_fix
 
 app = FastAPI()
 
@@ -97,7 +97,9 @@ async def register_user(
     # Sanity check
     assert user_record.uid == str(user_id), "Inconsistent user record"
 
-    inserted_record = await db.get_collection("users").insert_one(user.model_dump())
+    inserted_record = await db.get_collection("users").insert_one(
+        objectid_fix(user.model_dump(), desired_outcome="oid")
+    )
 
     # If the user doesn't get inserted into mongodb...
     if inserted_record.inserted_id is None:
@@ -194,7 +196,7 @@ async def update_user(
 
     # Update the user
     record = await db.get_collection("users").find_one_and_update(
-        filter = {"id" : x_user}, update = {"$set" : diff}, return_document = ReturnDocument.AFTER
+        filter = {"_id" : ObjectId(x_user)}, update = {"$set" : diff}, return_document = ReturnDocument.AFTER
     )
 
     # If no record returned, assume the update failed unexpectedly
@@ -206,7 +208,7 @@ async def update_user(
         )
     
     # If the record isn't null, return that as the updated user in response
-    return User(**record)
+    return User(**objectid_fix(record, desired_outcome="str"))
     
 
 @app.get("/{user_id}")
@@ -219,7 +221,7 @@ async def get_user(
     db = await get_database()
 
     record = await db.get_collection("users").find_one(
-        {"id" : user_id}
+        {"_id" : ObjectId(user_id)}
     )
 
     if record is None:
@@ -229,4 +231,4 @@ async def get_user(
             additional_metadata={"user_searched_for" : user_id}
         )
 
-    return User(**record)
+    return User(**objectid_fix(record, desired_outcome="str"))

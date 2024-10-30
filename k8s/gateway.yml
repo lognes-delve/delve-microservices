@@ -27,3 +27,9 @@ spec:
     tls:
       mode: SIMPLE
       credentialName: delve-tls
+  - port:
+      number: 6379
+      name: redis-port
+      protocol: TCP
+    hosts:
+    - "*"

@@ -1,15 +1,14 @@
-from delve_common._db._database import get_database
-from bson import ObjectId
 from typing import Literal
+from pydantic import BaseModel
+from json import loads
+from bson import ObjectId
 
-async def ensure_vacant_username(username : str) -> bool:
+def dump_basemodel_to_json_bytes(m : BaseModel, *, encoding : str = 'utf-8') -> bytes:
+    return m.model_dump_json().encode(encoding)
 
-    db = await get_database()
+def load_json_bytes(b : bytes, *, encoding : str = 'utf-8') -> dict:
+    return loads(b.decode(encoding))
 
-    user_search = await db.get_collection("users").find_one({"username" : username.lower()})
-
-    # Dont do anything with the user data pulled, just return true if there's no user found.
-    return user_search is None
 
 def objectid_fix(d : dict, *, desired_outcome : Literal["oid", "str"] = "oid") -> dict:
     """
