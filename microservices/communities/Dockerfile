@@ -1,7 +1,7 @@
 FROM python:3-slim
 
 # Add an optional argument for the github PAT to get access to
-# the common-lib repo
+# the common-lib repo.
 ARG GH_TOKEN
 
 # This is where the app is hosted in the container
