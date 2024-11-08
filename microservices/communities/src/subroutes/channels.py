@@ -5,7 +5,7 @@ from fastapi import Depends
 from fastapi.routing import APIRouter
 from bson import ObjectId
 from pymongo import ReturnDocument
-import copy from copy
+from copy import copy
 
 from ..constants import X_USER_HEADER
 from ..models import (
