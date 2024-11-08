@@ -23,6 +23,8 @@ from .subroutes.member import router as MemberRouter
 from .subroutes.message import router as MessageRouter
 from .subroutes.roles import router as RoleRouter
 
+from .subroutes.member import member_join_community
+
 from .messaging.messages.out.communities import (
     CommunityCreatedEvent,
     CommunityModifiedEvent,
@@ -137,6 +139,9 @@ async def create_community(
         )
     )
 
+    # Call the community join endpoint directly because im lazy
+    await member_join_community(str(user_id), str(comm_id))
+
     # If all goes well, return the new community
     return comm
 
@@ -144,7 +149,39 @@ async def create_community(
 async def get_joined_communities(
     user_id : Annotated[str, Depends(X_USER_HEADER)]
 ) -> List[Community]:
-    return # TODO: (Requires members subroutes to be done first)
+    
+    
+    db = await get_database()
+
+    pipeline = db.get_collection("communities").aggregate(
+        [
+            # Gather all community members
+            {
+                "$lookup" : {
+                    "from" : "members",
+                    "localField" : "_id",
+                    "foreignField" : "community_id",
+                    "as" : "community_members"
+                }
+            },
+            # Find all references to this user's id in the community_members array
+            {
+                "$match" : {
+                    "community_members" : {
+                        "$elemMatch" : {"user_id" : ObjectId(user_id)}
+                    }
+                }
+            },
+            # Remove the community members array because we only want the communities
+            {
+                "$project" : {
+                    "community_members" : 0
+                }
+            }
+        ]
+    )
+
+    return [Community(**objectid_fix(d, desired_outcome="str")) async for d in pipeline]
 
 @app.get("/{community_id}")
 async def get_community(
