@@ -4,7 +4,7 @@ metadata:
   name: community # REPLACE ME
   namespace: flux-system
 spec:
-  image: registry.lognes.dev/microservices/community # REPLACE ME
+  image: registry.lognes.dev/microservices/communities # REPLACE ME
   interval: 5m0s
 ---
 apiVersion: image.toolkit.fluxcd.io/v1beta2
