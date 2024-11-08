@@ -1,7 +1,11 @@
 from typing import Literal, Optional
 from ..base import BaseEvent, BaseError
 from pydantic import Field
+
 from delve_common._types._dtos._message import Message
+from delve_common._types._dtos._communities._community import Community
+from delve_common._types._dtos._communities._member import Member
+from delve_common._types._dtos._communities._channel import Channel
 
 # region Community Events
 
@@ -12,10 +16,13 @@ class CommunityEvent(BaseEvent):
 class CommunityCreatedEvent(CommunityEvent):
     """When a community is created"""
     event: Literal["community_created"] = "community_created"
+    community : Community
 
 class CommunityModifiedEvent(CommunityEvent):
     """When a community is modified"""
     event : Literal['community_modified'] = 'community_modified'
+    before : Community
+    after : Community
 
 class CommunityDeletedEvent(CommunityEvent):
     """When a community is deleted"""
@@ -32,6 +39,7 @@ class MemberEvent(CommunityEvent):
 class JoinedCommunityEvent(MemberEvent):
     """When a user joins a community"""
     event : Literal["joined_community"] = "joined_community"
+    member : Member
 
 class LeftCommunityEvent(MemberEvent):
     """When a user leaves a community"""
@@ -44,6 +52,9 @@ class MemberModifiedEvent(MemberEvent):
     """When a member is modified"""
     event: Literal["member_modified"] = "member_modified"
 
+    before : Member
+    after : Member
+
 # endregion
 
 # region Channel Events
@@ -55,9 +66,14 @@ class ChannelEvent(CommunityEvent):
 class ChannelCreatedEvent(ChannelEvent):
     event : Literal["channel_created"] = "channel_created"
 
+    channel : Channel
+
 class ChannelModifiedEvent(ChannelEvent):
     """When a channel is modified (not created)."""
     event : Literal["channel_modified"] = "channel_modified"
+
+    before : Channel
+    after : Channel
 
 class ChannelDeletedEvent(ChannelEvent):
     event : Literal["channel_deleted"] = "channel_deleted"

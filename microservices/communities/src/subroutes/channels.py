@@ -5,6 +5,7 @@ from fastapi import Depends
 from fastapi.routing import APIRouter
 from bson import ObjectId
 from pymongo import ReturnDocument
+import copy from copy
 
 from ..constants import X_USER_HEADER
 from ..models import (
@@ -110,7 +111,8 @@ async def create_channel(
         dump_basemodel_to_json_bytes(
             ChannelCreatedEvent(
                 community_id=community.id,
-                channel_id=channel.id
+                channel_id=channel.id,
+                channel = channel
             )
         )
     )
@@ -177,32 +179,39 @@ async def update_channel(
             identifier="lacking_permissions"
         )
     
-    res = await db.get_collection("channels").find_one_and_update(
+    before_res = await db.get_collection("channels").find_one_and_update(
         {"community_id" : ObjectId(comm.id), "_id" : ObjectId(channel_id)},
         {"$set" : {**diff, "edited_at" : datetime.now(tz=UTC)}},
-        return_document=ReturnDocument.AFTER
+        return_document=ReturnDocument.BEFORE
     )
 
-    if not res:
+    if not before_res:
         raise DelveHTTPException(
             status_code=404,
             detail="Failed to find channel",
             identifier="channel_not_found"
         )
     
+    before_channel = Channel(**objectid_fix(before_res, desired_outcome="str"))
+
+    after_channel = copy(before_channel)
+
+    for k, v in {**diff, "edited_at" : datetime.now(tz=UTC)}:
+        setattr(after_channel, k, v)
+    
     await redis.publish(
         f"channel_modified.{comm.id}.{channel_id}",
         dump_basemodel_to_json_bytes(
             ChannelModifiedEvent(
                 community_id=comm.id,
-                channel_id=channel_id
+                channel_id=channel_id,
+                before = before_channel,
+                after = after_channel
             )
         )
     )
-
-    updated_channel = Channel(**objectid_fix(res, desired_outcome="str"))
     
-    return updated_channel
+    return after_channel
 
 @router.delete("/{community_id}/channels/{channel_id}")
 async def delete_channel(

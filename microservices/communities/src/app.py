@@ -130,7 +130,10 @@ async def create_community(
     await redis.publish(
         f"community_created.{str(comm_id)}",
         dump_basemodel_to_json_bytes(
-            CommunityCreatedEvent(community_id=str(comm_id))
+            CommunityCreatedEvent(
+                community_id=str(comm_id),
+                community = comm
+            )
         )
     )
 
@@ -198,10 +201,10 @@ async def update_community(
         )
     
     # init an object to ensure everything is okay
-    community = Community(**objectid_fix(community, desired_outcome="str"))
+    before_community = Community(**objectid_fix(community, desired_outcome="str"))
     
     # region | # TODO<advanced-perms>: This will need revision when implementing advanced permissions
-    if user_id != community.owner_id:
+    if user_id != before_community.owner_id:
         raise DelveHTTPException(
             status_code=401,
             detail="You don't have permission to do this",
@@ -218,6 +221,8 @@ async def update_community(
         return_document=ReturnDocument.AFTER # Return the document after the modification
     )
 
+    after_community = Community(**objectid_fix(resp, desired_outcome="str"))
+
     # This shouldn't happen.
     if not resp:
         raise DelveHTTPException(
@@ -230,13 +235,15 @@ async def update_community(
         f"community_modified.{community_id}",
         dump_basemodel_to_json_bytes(
             CommunityModifiedEvent(
-                community_id=community_id
+                community_id=community_id,
+                before = before_community,
+                after = after_community
             )
         )
     )
 
     # Return the updated community
-    return Community(**objectid_fix(resp, desired_outcome="str"))
+    return after_community
 
 @app.delete("/{community_id}")
 async def delete_community(

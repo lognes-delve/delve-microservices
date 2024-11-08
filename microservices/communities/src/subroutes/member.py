@@ -1,11 +1,11 @@
-
-from contextlib import asynccontextmanager
+from datetime import UTC, datetime
 from delve_common._types._dtos._communities._member import Member
 from typing import Annotated, List, Optional
 from fastapi import Body, Depends, FastAPI
 from fastapi.routing import APIRouter
 from bson import ObjectId
 from pymongo import ReturnDocument
+from copy import copy
 
 from delve_common._db._database import get_database
 from delve_common._db._redis import get_redis
@@ -86,7 +86,8 @@ async def member_join_community(
         dump_basemodel_to_json_bytes(
             JoinedCommunityEvent(
                 community_id=community_id,
-                user_id=user_id
+                user_id=user_id,
+                member=new_member
             )
         )
     )
@@ -162,34 +163,47 @@ async def update_member(
     
     diff = member_edit_request.model_dump(exclude_none=True)
 
+    # Update the edited at timestamp
+    diff["edited_at"] = datetime.now(tz=UTC)
+
     # If nickname is a zero-length string, then unset nickname
     if "nickname" in diff and diff["nickname"] == "":
         diff["nickname"] = None
 
-    resp = await db.get_collection("members").find_one_and_update(
+    before_resp = await db.get_collection("members").find_one_and_update(
         {"user_id" : ObjectId(user_id), "community_id" : ObjectId(community_id)},
         {"$set" : diff},
-        return_document=ReturnDocument.AFTER
+        return_document=ReturnDocument.BEFORE
     )
 
-    if not resp:
+    if not before_resp:
         raise DelveHTTPException(
             status_code=404,
             detail="Failed to find member",
             identifier="member_not_found"
         )
     
+    before_member = Member(**objectid_fix(before_resp, desired_outcome="str"))
+
+    # Create a copy and apply the new changes
+    after_member = copy(before_member)
+
+    for k, v in diff.items():
+        setattr(after_member, k, v) # Horrible hack to do this
+    
     await redis.publish(
         f"member_modified.{community_id}.{user_id}",
         dump_basemodel_to_json_bytes(
             MemberModifiedEvent(
                 community_id=community_id,
-                user_id=user_id
+                user_id=user_id,
+                before = before_member,
+                after = after_member
             )
         )
     )
 
-    return Member(**objectid_fix(resp, desired_outcome="str"))
+    return after_member
 
 @router.get("/{community_id}/members/search")
 async def members_search() -> List[Member]:
