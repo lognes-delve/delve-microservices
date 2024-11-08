@@ -248,7 +248,7 @@ async def delete_community(
     redis = await get_redis()
 
     # Get a reference to the community
-    community = await db.get_collection("communities").find_one({"id" : community_id})
+    community = await db.get_collection("communities").find_one({"_id" : ObjectId(community_id)})
 
     # Ensure the community exists
     if not community:
@@ -271,7 +271,7 @@ async def delete_community(
     # endregion
 
     # Delete the community
-    resp = await db.get_collection("communities").delete_one({"id" : community_id})
+    resp = await db.get_collection("communities").delete_one({"_id" : ObjectId(community_id)})
 
     # This shouldn't happen.
     if resp.deleted_count != 1:
@@ -280,6 +280,14 @@ async def delete_community(
             detail="Failed to delete community",
             identifier="nightmare_error"
         )
+
+    # Delete all of the other resources assoc. with the community if the community deletes succesfully
+    # NOTE: If a community is deleted, then it is ASSUMED that ALL other resources assoc. with the community
+    #       have been deleted as well. I cba to send out all of the other redis events for it.  
+    await db.get_collection("community_messages").delete_many({{"community_id" : ObjectId(community_id)}})
+    await db.get_collection("channels").delete_many({"community_id" : ObjectId(community_id)})
+    await db.get_collection("members").delete_many({"community_id" : ObjectId(community)})
+    # TODO: This needs to also delete roles when the time comes to implement them
 
     await redis.publish(
         f"community_deleted.{community_id}",

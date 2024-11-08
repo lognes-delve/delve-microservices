@@ -1,6 +1,7 @@
 from typing import Literal, Optional
 from ..base import BaseEvent, BaseError
 from pydantic import Field
+from delve_common._types._dtos._message import Message
 
 # region Community Events
 
@@ -60,5 +61,37 @@ class ChannelModifiedEvent(ChannelEvent):
 
 class ChannelDeletedEvent(ChannelEvent):
     event : Literal["channel_deleted"] = "channel_deleted"
+
+# endregion
+
+# region Message Events
+
+class CommunityMessageEvent(ChannelEvent):
+    """
+        Abstraction for events related to messages.
+        Since messages are sent in channels, it's derived from ChannelEvent
+    """
+    message_id : str
+
+class CommunityMessageCreatedEvent(CommunityMessageEvent):
+    """When a message is sent to a channel"""
+    event : Literal["community_message_created"] = "community_message_created"
+    message : Message
+
+class CommunityMessageDeletedEvent(CommunityMessageEvent):
+    """When a message is deleted from a channel"""
+    event : Literal["community_message_deleted"] = "community_message_deleted"
+
+class CommunityMessageModifiedEvent(CommunityMessageEvent):
+    """When a message is edited"""
+    event : Literal["community_message_modified"] = "community_message_modified"
+    before : Message
+    after : Message
+
+class CommunityMessagePingEvent(CommunityMessageEvent):
+    """
+    When a message contains a ping
+    """
+    event : Literal["community_message_ping"] = "community_message_ping"
 
 # endregion
