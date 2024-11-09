@@ -12,9 +12,9 @@ spec:
   http:
   - match:
     - uri:
-        exact: "/community" # REPLACE ME
+        exact: "/communities" # REPLACE ME
     - uri:
-        prefix: "/community/" # REPLACE ME
+        prefix: "/communities/" # REPLACE ME
     rewrite:
       uri: "/"
     route:
