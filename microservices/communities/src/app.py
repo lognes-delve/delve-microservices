@@ -330,7 +330,7 @@ async def delete_community(
     #       have been deleted as well. I cba to send out all of the other redis events for it.  
     await db.get_collection("community_messages").delete_many({"community_id" : ObjectId(community_id)})
     await db.get_collection("channels").delete_many({"community_id" : ObjectId(community_id)})
-    await db.get_collection("members").delete_many({"community_id" : ObjectId(community)})
+    await db.get_collection("members").delete_many({"community_id" : ObjectId(community_id)})
     # TODO: This needs to also delete roles when the time comes to implement them
 
     await redis.publish(
