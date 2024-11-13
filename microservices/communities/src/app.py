@@ -328,7 +328,7 @@ async def delete_community(
     # Delete all of the other resources assoc. with the community if the community deletes succesfully
     # NOTE: If a community is deleted, then it is ASSUMED that ALL other resources assoc. with the community
     #       have been deleted as well. I cba to send out all of the other redis events for it.  
-    await db.get_collection("community_messages").delete_many({{"community_id" : ObjectId(community_id)}})
+    await db.get_collection("community_messages").delete_many({"community_id" : ObjectId(community_id)})
     await db.get_collection("channels").delete_many({"community_id" : ObjectId(community_id)})
     await db.get_collection("members").delete_many({"community_id" : ObjectId(community)})
     # TODO: This needs to also delete roles when the time comes to implement them
