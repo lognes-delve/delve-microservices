@@ -14,7 +14,7 @@ from delve_common._types._dtos._communities import Community
 from delve_common._types._dtos._communities._member import Member
 
 from ..models import MemberEditRequest, MemberWithEmbeddedUser
-from ..messaging.messages.out.communities import (
+from delve_common._messages.communities import (
     MemberModifiedEvent, JoinedCommunityEvent, LeftCommunityEvent
 )
 

@@ -19,7 +19,7 @@ from ..utils import (
 from delve_common._db._database import get_database
 from delve_common._db._redis import get_redis
 from delve_common.exceptions import DelveHTTPException
-from ..messaging.messages.out.communities import (
+from delve_common._messages.communities import (
     CommunityMessageCreatedEvent,
     CommunityMessageDeletedEvent,
     CommunityMessageModifiedEvent,

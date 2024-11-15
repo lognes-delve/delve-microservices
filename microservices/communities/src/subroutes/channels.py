@@ -19,7 +19,7 @@ from delve_common._types._dtos._communities._community import Community
 from delve_common._db._database import get_database
 from delve_common._db._redis import get_redis
 from delve_common.exceptions import DelveHTTPException
-from ..messaging.messages.out.communities import (
+from delve_common._messages.communities import (
     ChannelCreatedEvent, 
     ChannelDeletedEvent, 
     ChannelModifiedEvent

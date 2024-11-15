@@ -25,7 +25,7 @@ from .subroutes.roles import router as RoleRouter
 
 from .subroutes.member import member_join_community
 
-from .messaging.messages.out.communities import (
+from delve_common._messages.communities import (
     CommunityCreatedEvent,
     CommunityModifiedEvent,
     CommunityDeletedEvent
