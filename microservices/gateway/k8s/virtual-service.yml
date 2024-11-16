@@ -1,0 +1,22 @@
+# See more at https://istio.io/docs/reference/config/networking/virtual-service/
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: gateway-ms-vs # REPLACE ME
+  namespace: default
+spec:
+  hosts:
+  - delve.lognes.dev
+  gateways:
+  - delve-gateway
+  http:
+  - match:
+    - uri:
+        exact: "/gateway" # REPLACE ME
+    - uri:
+        prefix: "/gateway/" # REPLACE ME
+    rewrite:
+      uri: "/"
+    route:
+    - destination:
+        host: gateway-ms-svc # REPLACE ME

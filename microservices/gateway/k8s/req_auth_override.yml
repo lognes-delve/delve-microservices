@@ -1,0 +1,10 @@
+apiVersion: security.istio.io/v1beta1
+kind: RequestAuthentication
+metadata:
+  name: gateway-ms-auth-override 
+  namespace: istio-system
+spec:
+  selector:
+    matchLabels:
+      app: gateway-ms
+  jwtRules: []

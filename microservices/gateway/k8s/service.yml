@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: gateway-ms-svc # REPLACE ME
+  namespace: default
+spec:
+  selector:
+    app: gateway-ms # REPLACE ME
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080

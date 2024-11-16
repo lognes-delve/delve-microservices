@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway-ms # REPLACE ME
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gateway-ms # REPLACE ME
+  template:
+    metadata:
+      labels:
+        app: gateway-ms # REPLACE ME
+    spec:
+      containers:
+      - name: gateway # REPLACE ME
+        image: registry.lognes.dev/microservices/gateway:latest # {"$imagepolicy": "flux-system:gateway-policy"}
+        imagePullPolicy: "Always"
+        ports:
+        - containerPort: 8080
+        envFrom:
+        - configMapRef:
+            name: delve-cm
