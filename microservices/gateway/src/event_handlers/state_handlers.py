@@ -1,8 +1,62 @@
+from typing import Optional
 from ..models import GatewayState
-from ..messages import StateResponse, StateRequest
 from copy import copy
 from .ack import assert_gateway_readiness
+from ..messages import (
+    StateResponse, 
+    StateRequest
+)
+from delve_common._messages.communities import (
+    CommunityDeletedEvent,
+    LeftCommunityEvent,
+    CommunityCreatedEvent,
+    JoinedCommunityEvent
+)
 
+# region Util
+
+def util_get_community_redis_channels(community_id : str):
+    return [
+        f"community_deleted.{community_id}",
+        f"community_modified.{community_id}",
+    ]
+
+def util_get_channel_redis_channels(community_id : str, channel_id : Optional[str] = "*"):
+    return [
+        f"channel_created.{community_id}.{channel_id}",
+        f"channel_modified.{community_id}.{channel_id}",
+        f"channel_deleted.{community_id}.{channel_id}",
+    ]
+
+def util_get_member_redis_channels(community_id : str, user_id : Optional[str] = "*"):
+    return [
+        f"member_joined.{community_id}.{user_id}",
+        f"member_left.{community_id}.{user_id}",
+        f"member_modified.{community_id}.{user_id}"
+    ]
+
+def util_get_all_redis_channels(community_id : str):
+    return [
+        *util_get_community_redis_channels(community_id),
+        *util_get_channel_redis_channels(community_id),
+        *util_get_member_redis_channels(community_id)
+    ]
+
+# endregion
+
+# 'community_modified'
+# "member_modified"
+# "channel_modified"
+# "channel_created"
+# "channel_deleted"
+
+# These are just forwarded, and do not need any additional information
+# "community_message_created"
+# "community_message_deleted"
+# "community_message_modified"
+# "community_message_ping"
+
+# "state_response"
 async def update_view_state(d : dict, gateway_state : GatewayState) -> None:    
     resp = StateResponse(**d)
 
@@ -30,3 +84,39 @@ async def update_view_state(d : dict, gateway_state : GatewayState) -> None:
 
     await assert_gateway_readiness(gateway_state)
     
+# "community_deleted"
+async def community_deleted_handler(d : dict, gateway_state : GatewayState) -> None:
+    resp = CommunityDeletedEvent(**d)
+
+    await gateway_state.pubsub.unsubscribe(*util_get_all_redis_channels(resp.community_id))
+
+# "left_community"
+async def left_community_handler(d : dict, gateway_state : GatewayState) -> None:
+
+    resp = LeftCommunityEvent(**d)
+
+    if (gateway_state.user_id == resp.user_id):
+
+        return await gateway_state.pubsub.unsubscribe(
+            *util_get_community_redis_channels(
+                resp.community_id
+            )
+        )
+
+# "joined_community"
+async def joined_community_handler(d : dict, gateway_state : GatewayState) -> None:
+
+    resp = JoinedCommunityEvent(**d)
+
+    if resp.user_id == gateway_state.user_id:
+
+        return await gateway_state.pubsub.psubscribe(
+            *util_get_all_redis_channels(resp.community_id)
+        )
+    
+# "community_created"
+async def community_created_handler(d : dict, gateway_state : GatewayState) -> None:
+
+    resp = CommunityCreatedEvent(**d)
+
+    await gateway_state.pubsub.psubscribe(*util_get_all_redis_channels(resp.community_id))

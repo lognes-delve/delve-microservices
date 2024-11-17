@@ -14,7 +14,11 @@ from .messages import StateResponse, StateRequest
 from .auth import get_cookie_or_token, process_jwt_token
 
 from .event_handlers.state_handlers import (
-    update_view_state
+    update_view_state,
+    joined_community_handler,
+    left_community_handler,
+    community_created_handler,
+    community_deleted_handler
 )
 
 app = FastAPI()
@@ -76,12 +80,24 @@ async def websocket_gateway(
 
     event_handler = EventHandler(gateway_state=gateway_state)
     event_handler.add_event_forward("state_request")
-    event_handler.register_handler(
-        "state_response", update_view_state
-    )
+
+    event_handler.register_handler("state_response", update_view_state)
+    event_handler.register_handler("joined_community", joined_community_handler)
+    event_handler.register_handler("left_community", left_community_handler)
+    event_handler.register_handler("community_created", community_created_handler)
+    event_handler.register_handler("community_deleted", community_deleted_handler)
 
     # All of the message forwards
     event_handler.add_event_forwards(
+        # "community_created", # not technically required to be forwarded
+        'community_modified',
+        'community_deleted',
+        "joined_community",
+        "left_community",
+        "member_modified",
+        "channel_created",
+        "channel_modified",
+        "channel_deleted",
         "community_message_created",
         "community_message_deleted",
         "community_message_modified",
