@@ -42,7 +42,6 @@ async def websocket_gateway(
     websocket : WebSocket,
     token : Annotated[str, Depends(get_cookie_or_token)]
 ):
-    
     if not token:
         raise ValueError("Not auth'n'ed.")
 
