@@ -119,5 +119,5 @@ async def community_created_handler(d : dict, gateway_state : GatewayState) -> N
 
     resp = CommunityCreatedEvent(**d)
 
-    if resp.community["owner_id"] == gateway_state.user_id:
+    if resp.community.owner_id == gateway_state.user_id:
         await gateway_state.pubsub.psubscribe(*util_get_all_redis_channels(resp.community_id))
