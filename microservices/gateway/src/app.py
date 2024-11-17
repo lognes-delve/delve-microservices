@@ -82,6 +82,11 @@ async def websocket_gateway(
         ]
     )
 
+    # We need to listen to this event as well to determine whether or not the user
+    # created a new community and to it.
+    # We check to see if the user who created it is the current gateway user in the handler
+    await redis_pubsub.psubscribe("community_created.*")
+
     # endregion
 
     # region Building the AsyncIterators for the different sources messages will flow in from
