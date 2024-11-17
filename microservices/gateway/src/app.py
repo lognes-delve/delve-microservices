@@ -81,10 +81,10 @@ async def websocket_gateway(
         ]
     )
 
-    # We need to listen to this event as well to determine whether or not the user
-    # created a new community and to it.
-    # We check to see if the user who created it is the current gateway user in the handler
-    await redis_pubsub.psubscribe("community_created.*")
+    await redis_pubsub.psubscribe(
+        f"joined_community.*.{gateway_state.user_id}",
+        f"community_user_ping.{gateway_state.user_id}"
+    )
 
     # endregion
 
