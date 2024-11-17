@@ -90,7 +90,6 @@ async def websocket_gateway(
         async for message in websocket.iter_json():
             yield message
 
-
     # This recieves payloads from redis
     async def from_redis_pubsub_iterator() -> AsyncIterator[dict]:
         while True:
