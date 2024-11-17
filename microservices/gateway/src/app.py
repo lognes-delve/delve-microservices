@@ -1,10 +1,12 @@
 from typing import Annotated, AsyncIterator
+from bson import ObjectId
 from fastapi import Depends, FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 import json
 from asyncio import Queue
+from functools import reduce
 
-from delve_common._db._database import Database, get_client
+from delve_common._db._database import Database, get_database
 from delve_common._db._redis import DelveRedis, get_redis
 
 from .models import GatewayState
@@ -18,7 +20,8 @@ from .event_handlers.state_handlers import (
     joined_community_handler,
     left_community_handler,
     community_created_handler,
-    community_deleted_handler
+    community_deleted_handler,
+    util_get_all_redis_channels
 )
 
 app = FastAPI()
@@ -57,6 +60,29 @@ async def websocket_gateway(
 
     await websocket.accept()
     await redis_pubsub.connect() # Ensure that redis pub/sub connection is made
+
+    # region Redis Get-Ready
+
+    db = await get_database()
+
+    cursor = db.get_collection("members").find(
+        {"user_id" : ObjectId(gateway_state.user_id)},
+        {"community_id" : True}
+    )
+
+    community_list = await cursor.to_list(None)
+
+    channels_to_listen_to = [util_get_all_redis_channels(c["community_id"]) for c in community_list]
+
+    await redis_pubsub.psubscribe(
+        [
+            chan 
+            for community_redis_channels in channels_to_listen_to 
+            for chan in community_redis_channels
+        ]
+    )
+
+    # endregion
 
     # region Building the AsyncIterators for the different sources messages will flow in from
     # This recieves payloads from clients
