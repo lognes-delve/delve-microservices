@@ -142,7 +142,7 @@ async def update_member(
     db = await get_database()
     redis = await get_redis()
 
-    comm = await db.get_collection("communities").find_one({'id' : ObjectId(community_id)})
+    comm = await db.get_collection("communities").find_one({'_id' : ObjectId(community_id)})
 
     if not comm:
         raise DelveHTTPException(
