@@ -74,13 +74,16 @@ async def websocket_gateway(
 
     channels_to_listen_to = [util_get_all_redis_channels(c["community_id"]) for c in community_list]
 
-    await redis_pubsub.psubscribe(
-        *[
-            chan 
-            for community_redis_channels in channels_to_listen_to 
-            for chan in community_redis_channels
-        ]
-    )
+    reduced_channels = [
+        chan 
+        for community_redis_channels in channels_to_listen_to 
+        for chan in community_redis_channels
+    ]
+
+    if reduced_channels:
+        await redis_pubsub.psubscribe(
+            *reduced_channels
+        )
 
     await redis_pubsub.psubscribe(
         f"joined_community.*.{gateway_state.user_id}",
