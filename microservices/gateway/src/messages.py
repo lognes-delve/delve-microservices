@@ -15,3 +15,10 @@ class GatewayReady(BaseEvent):
 
 class GatewayNotReady(BaseEvent):
     event: Literal["gateway_not_ready"] = "gateway_not_ready"
+
+class HeartbeatRequest(BaseEvent):
+    event: Literal["heartbeat_request"] = "heartbeat_request"
+
+class HeartbeatResponse(BaseEvent):
+    event: Literal["heartbeat_response"] = "heartbeat_response"
+
