@@ -196,7 +196,7 @@ async def update_channel(
 
     after_channel = copy(before_channel)
 
-    for k, v in {**diff, "edited_at" : datetime.now(tz=UTC)}:
+    for k, v in {**diff, "edited_at" : datetime.now(tz=UTC)}.items():
         setattr(after_channel, k, v)
     
     await redis.publish(
