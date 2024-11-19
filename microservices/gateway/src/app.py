@@ -1,3 +1,4 @@
+import asyncio
 from typing import Annotated, AsyncIterator
 from bson import ObjectId
 from fastapi import Depends, FastAPI, WebSocket
@@ -12,7 +13,7 @@ from delve_common._db._redis import DelveRedis, get_redis
 from .models import GatewayState
 from .event_handler import EventHandler
 from .event_listener import EventListener
-from .messages import StateResponse, StateRequest
+from .messages import HeartbeatRequest, HeartbeatResponse, StateResponse, StateRequest
 from .auth import get_cookie_or_token, process_jwt_token
 
 from .event_handlers.state_handlers import (
@@ -101,10 +102,16 @@ async def websocket_gateway(
             if msg is None: continue
             yield json.loads((bytes(msg['data'])).decode('utf-8'))  
 
+    async def heartbeat_request() -> AsyncIterator[dict]:
+        while True:
+            await asyncio.sleep(5)
+            yield HeartbeatRequest().model_dump()
+
     # Add the sources to the event listener
     event_listener = EventListener()
-    event_listener.add_event_source("ws", from_ws_iterator, valid_events=[StateResponse])
+    event_listener.add_event_source("ws", from_ws_iterator, valid_events=[StateResponse, HeartbeatResponse])
     event_listener.add_event_source("redis", from_redis_pubsub_iterator)
+    event_listener.add_event_source("heartbeat", heartbeat_request, valid_events=[HeartbeatRequest])
     # endregion
 
     event_handler = EventHandler(gateway_state=gateway_state)
@@ -130,7 +137,8 @@ async def websocket_gateway(
         "community_message_created",
         "community_message_deleted",
         "community_message_modified",
-        "community_message_ping"
+        "community_message_ping",
+        "heartbeat_request"
     )
 
     # Put an initial event query to ask for the client's state
