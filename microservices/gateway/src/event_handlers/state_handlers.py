@@ -66,11 +66,12 @@ async def update_view_state(d : dict, gateway_state : GatewayState) -> None:
     gateway_state.current_community_id = resp.community_id
 
     # Subscribe to new message events
-    await gateway_state.pubsub.psubscribe(
-        f"community_message_sent.{gateway_state.current_community_id}.{gateway_state.current_channel_id}",
-        f"community_message_modified.{gateway_state.current_community_id}.{gateway_state.current_channel_id}.*",
-        f"community_message_deleted.{gateway_state.current_community_id}.{gateway_state.current_channel_id}.*"
-    )
+    if resp.channel_id and resp.community_id:
+        await gateway_state.pubsub.psubscribe(
+            f"community_message_sent.{gateway_state.current_community_id}.{gateway_state.current_channel_id}",
+            f"community_message_modified.{gateway_state.current_community_id}.{gateway_state.current_channel_id}.*",
+            f"community_message_deleted.{gateway_state.current_community_id}.{gateway_state.current_channel_id}.*"
+        )
 
     # Unsubscribe from the old message events
     if old_state.current_channel_id or old_state.current_community_id:
