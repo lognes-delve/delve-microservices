@@ -33,18 +33,6 @@ from ..constants import X_USER_HEADER
 
 router = APIRouter()
 
-@router.post("/{community_id}/members")
-async def member_join_community(
-    user_id : Annotated[str, Depends(X_USER_HEADER)],
-    community_id : str,
-) -> Member:
-    """***DEPRECATED ENDPOINT DO NOT USE***"""
-    raise DelveHTTPException(
-        status_code=410,
-        detail="This endpoint is deprecated. Use an invite code to join a community!",
-        identifier="deprecated_endpoint"
-    )
-
 @router.delete("/{community_id}/members")
 async def member_leave_community(
     user_id : Annotated[str, Depends(X_USER_HEADER)],
