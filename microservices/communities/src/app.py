@@ -16,6 +16,8 @@ from .utils import dump_basemodel_to_json_bytes, objectid_fix
 from delve_common._types._dtos._communities import Community
 from delve_common._types._dtos._communities._channel import Channel
 from delve_common._types._dtos._communities._role import Role
+from delve_common._types._dtos._communities._member import Member
+from delve_common._messages.communities import JoinedCommunityEvent
 
 # Import all of the subrouters
 from .subroutes.channels import router as ChannelRouter
@@ -23,8 +25,6 @@ from .subroutes.member import router as MemberRouter
 from .subroutes.message import router as MessageRouter
 from .subroutes.roles import router as RoleRouter
 from .subroutes.invites import router as InviteRouter
-
-from .subroutes.member import member_join_community
 
 from delve_common._messages.communities import (
     CommunityCreatedEvent,
@@ -140,8 +140,26 @@ async def create_community(
         )
     )
 
-    # Call the community join endpoint directly because im lazy
-    await member_join_community(str(user_id), str(comm_id))
+    new_member = Member(
+        id=str(ObjectId()),
+        community_id=str(ObjectId(comm.id)),
+        user_id=str(ObjectId(user_id))
+    )
+
+    resp = await db.get_collection("members").insert_one(
+        objectid_fix(new_member.model_dump(), desired_outcome="oid")
+    )
+
+    await redis.publish(
+        f"member_joined.{str(comm.id)}.{user_id}",
+        dump_basemodel_to_json_bytes(
+            JoinedCommunityEvent(
+                community_id=str(comm.id),
+                user_id=user_id,
+                member=new_member
+            )
+        )
+    )
 
     # If all goes well, return the new community
     return comm
