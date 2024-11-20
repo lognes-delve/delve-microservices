@@ -22,6 +22,7 @@ from .subroutes.channels import router as ChannelRouter
 from .subroutes.member import router as MemberRouter
 from .subroutes.message import router as MessageRouter
 from .subroutes.roles import router as RoleRouter
+from .subroutes.invites import router as InviteRouter
 
 from .subroutes.member import member_join_community
 
@@ -331,6 +332,7 @@ async def delete_community(
     await db.get_collection("community_messages").delete_many({"community_id" : ObjectId(community_id)})
     await db.get_collection("channels").delete_many({"community_id" : ObjectId(community_id)})
     await db.get_collection("members").delete_many({"community_id" : ObjectId(community_id)})
+    await db.get_collection("invites").delete_many({"community_id" : ObjectId(community_id)})
     # TODO: This needs to also delete roles when the time comes to implement them
 
     await redis.publish(
@@ -351,3 +353,4 @@ app.include_router(ChannelRouter)
 app.include_router(MessageRouter)
 app.include_router(RoleRouter)
 app.include_router(MemberRouter)
+app.include_router(InviteRouter)

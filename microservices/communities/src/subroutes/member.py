@@ -38,61 +38,12 @@ async def member_join_community(
     user_id : Annotated[str, Depends(X_USER_HEADER)],
     community_id : str,
 ) -> Member:
-    
-    db = await get_database()
-    redis = await get_redis()
-
-    await db.get_collection("members").create_index(
-        {"user_id" : 1, "community_id" : 1}, 
-        unique=True, 
-        name="members_composite_index"
+    """***DEPRECATED ENDPOINT DO NOT USE***"""
+    raise DelveHTTPException(
+        status_code=410,
+        detail="This endpoint is deprecated. Use an invite code to join a community!",
+        identifier="deprecated_endpoint"
     )
-
-    comm = await db.get_collection("communities").find_one({'_id' : ObjectId(community_id)})
-
-    if not comm:
-        raise DelveHTTPException(
-            status_code=404,
-            identifier="community_not_found",
-            detail="Failed to find community"
-        )
-
-    # Cast to ensure everything is fine, after this point is is assumed that the community must exist
-    comm = Community(**objectid_fix(comm, desired_outcome="str"))
-
-    resp = await db.get_collection("members").find_one(
-        {"user_id" : ObjectId(user_id), "community_id" : ObjectId(community_id)}
-    )
-
-    if resp:
-        raise DelveHTTPException(
-            status_code=400,
-            identifier="already_joined_community",
-            detail="You are already a member of this community!"
-        )
-    
-    new_member = Member(
-        id=str(ObjectId()),
-        community_id=str(ObjectId(community_id)),
-        user_id=str(ObjectId(user_id))
-    )
-
-    resp = await db.get_collection("members").insert_one(
-        objectid_fix(new_member.model_dump(), desired_outcome="oid")
-    )
-
-    await redis.publish(
-        f"member_joined.{community_id}.{user_id}",
-        dump_basemodel_to_json_bytes(
-            JoinedCommunityEvent(
-                community_id=community_id,
-                user_id=user_id,
-                member=new_member
-            )
-        )
-    )
-
-    return new_member
 
 @router.delete("/{community_id}/members")
 async def member_leave_community(
