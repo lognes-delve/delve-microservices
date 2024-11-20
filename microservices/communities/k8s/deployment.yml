@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: community # REPLACE ME
-        image: registry.lognes.dev/microservices/communities:master-1732081670 # {"$imagepolicy": "flux-system:community-policy"}
+        image: registry.lognes.dev/microservices/communities:master-1732098125 # {"$imagepolicy": "flux-system:community-policy"}
         imagePullPolicy: "Always"
         ports:
         - containerPort: 8080
