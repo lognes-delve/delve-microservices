@@ -52,7 +52,9 @@ class EventHandler(object):
             return
         
         for handler in self.event_handlers[event['event']]:
+            print(f"H:{len(self.event_handlers[event['event']])} {self.gateway_state} {event}")
             await handler(event, self.gateway_state)
+            print(f"P:{len(self.gateway_state.pubsub.patterns)}")
 
     async def __forward_event(self, event : dict) -> None:
         return await self.gateway_state.websocket.send_json(event)
