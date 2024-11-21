@@ -30,8 +30,8 @@ def util_get_channel_redis_channels(community_id : str, channel_id : Optional[st
 
 def util_get_member_redis_channels(community_id : str, user_id : Optional[str] = "*"):
     return [
-        f"member_joined.{community_id}.{user_id}",
-        f"member_left.{community_id}.{user_id}",
+        f"joined_community.{community_id}.{user_id}",
+        f"left_community.{community_id}.{user_id}",
         f"member_modified.{community_id}.{user_id}"
     ]
 
