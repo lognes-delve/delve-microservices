@@ -57,7 +57,7 @@ async def create_community(
     # Store the community id for nested list comprehensions
     comm_id = ObjectId()
 
-    # Build that big community object 
+    # Build that big community object
     comm = Community(
         id = str(comm_id),
         name = creationReq.name,
