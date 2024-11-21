@@ -52,6 +52,7 @@ class EventHandler(object):
             print(f"[{self.gateway_state.user_id}] Calling event handlers for: {event['event']}")
             await handler(event, self.gateway_state)
 
+        # bah
         print(self.gateway_state.user_id, self.gateway_state.pubsub.patterns.keys())
 
     async def __forward_event(self, event : dict) -> None:
