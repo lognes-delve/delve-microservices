@@ -33,7 +33,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class EMPTY(BaseModel): pass # sentinel class
+class EMPTY(BaseModel): pass # sentinel class 
 
 firebase_admin.initialize_app(
     firebase_admin.credentials.Certificate(json.loads(getenv("FIREBASE_CREDENTIALS"))), 
