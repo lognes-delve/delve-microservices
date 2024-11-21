@@ -33,7 +33,6 @@ class EventHandler(object):
 
     async def handle_event(self, event : dict, forward_events : bool = True) -> None:
         
-        print(self.gateway_state.user_id, self.event_handlers)
 
         # If a non-dictionary event pops into the thing, just turn it into a dict.
         if isinstance(event, BaseEvent):
@@ -49,12 +48,11 @@ class EventHandler(object):
         if event["event"] not in self.event_handlers:
             return
         
-        print(self.gateway_state.user_id, event['event'])
-        
         for handler in self.event_handlers[event['event']]:
-            print(f"H:{len(self.event_handlers[event['event']])} {self.gateway_state} {event}")
+            print(f"[{self.gateway_state.user_id}] Calling event handlers for: {event['event']}")
             await handler(event, self.gateway_state)
-            print(f"P:{len(self.gateway_state.pubsub.patterns)}")
+
+        print(self.gateway_state.user_id, self.gateway_state.pubsub.patterns.keys())
 
     async def __forward_event(self, event : dict) -> None:
         return await self.gateway_state.websocket.send_json(event)
