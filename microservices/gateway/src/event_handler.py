@@ -20,12 +20,9 @@ class EventHandler(object):
 
     def register_handler(
         self, 
-        event_type : Union[BaseEvent, str], 
+        event_type : str, 
         handler : Callable[[dict, GatewayState], Awaitable[None]]
     ) -> None:
-        
-        if isinstance(event_type, BaseEvent):
-            event_type = event_type.event
 
         if event_type not in self.event_handlers:
             self.event_handlers[event_type] = [handler]
@@ -36,6 +33,7 @@ class EventHandler(object):
 
     async def handle_event(self, event : dict, forward_events : bool = True) -> None:
         
+        print(self.gateway_state.user_id, self.event_handlers)
 
         # If a non-dictionary event pops into the thing, just turn it into a dict.
         if isinstance(event, BaseEvent):
@@ -50,6 +48,8 @@ class EventHandler(object):
 
         if event["event"] not in self.event_handlers:
             return
+        
+        print(self.gateway_state.user_id, event['event'])
         
         for handler in self.event_handlers[event['event']]:
             print(f"H:{len(self.event_handlers[event['event']])} {self.gateway_state} {event}")
