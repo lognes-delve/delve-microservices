@@ -86,6 +86,7 @@ async def websocket_gateway(
         )
 
     await redis_pubsub.psubscribe(
+        "community_created.*",
         f"joined_community.*.{gateway_state.user_id}",
         f"community_user_ping.{gateway_state.user_id}"
     )
