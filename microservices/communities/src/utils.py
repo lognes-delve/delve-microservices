@@ -29,6 +29,9 @@ def objectid_fix(d : dict, *, desired_outcome : Literal["oid", "str"] = "oid") -
 
     tmp = {}
 
+    if not isinstance(d, dict):
+        return d
+
     for k, v in d.items():
 
         if k == "id" and desired_outcome == "oid":
