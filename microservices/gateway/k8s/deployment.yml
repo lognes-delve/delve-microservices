@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: gateway # REPLACE ME
-        image: registry.lognes.dev/microservices/gateway:master-1732842255 # {"$imagepolicy": "flux-system:gateway-policy"}
+        image: registry.lognes.dev/microservices/gateway:master-1732924159 # {"$imagepolicy": "flux-system:gateway-policy"}
         imagePullPolicy: "Always"
         ports:
         - containerPort: 8080
