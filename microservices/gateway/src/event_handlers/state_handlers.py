@@ -146,5 +146,5 @@ async def heartbeat_response_handler(d : dict, gateway_state : GatewayState) -> 
 
     await db.get_collection("users").update_one(
         {"_id" : ObjectId(gateway_state.user_id)},
-        {"last_seen" : datetime.now(tz=UTC)}
+        {"$set" : {"last_seen" : datetime.now(tz=UTC)}}
     )
