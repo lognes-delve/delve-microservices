@@ -12,8 +12,10 @@ from delve_common._db._redis import get_redis
 from delve_common.exceptions import DelveHTTPException
 from delve_common._types._dtos._communities import Community
 from delve_common._types._dtos._communities._member import Member
+from delve_common._types._dtos._communities._role import Role
+from ..utils import get_full_member, MemberNotFound
 
-from ..models import MemberEditRequest, MemberWithEmbeddedUser
+from ..models import FullMember, MemberEditRequest, MemberWithEmbeddedUser
 from delve_common._messages.communities import (
     MemberModifiedEvent, JoinedCommunityEvent, LeftCommunityEvent
 )
@@ -155,44 +157,21 @@ async def get_member_by_id(
     auth_user_id : Annotated[str, Depends(X_USER_HEADER)],
     community_id : str,
     user_id : str,
-) -> MemberWithEmbeddedUser:
+) -> FullMember:
 
-    db = await get_database()
-
-    pipeline = db.get_collection("members").aggregate(
-        [
-            {
-                "$match" : {
-                    "user_id" : ObjectId(user_id),
-                    "community_id" : ObjectId(community_id)
-                }
-            },
-            {
-                "$lookup" : {
-                    "from" : "users",
-                    "localField" : "user_id",
-                    "foreignField" : "_id",
-                    "as" : "user"
-                }
-            }
-        ]
-    )
-
-    resp = [x async for x in pipeline]
-
-    if not resp:
+    try:
+        member = await get_full_member(
+            community_id=community_id,
+            user_id=user_id
+        )
+    except MemberNotFound:
         raise DelveHTTPException(
             status_code=404,
             detail="Failed to find member",
             identifier="member_not_found"
         )
-    
-    user_ref = resp[0]["user"][0]
-    del resp[0]["user"]
 
-    return MemberWithEmbeddedUser(
-        **objectid_fix({"user" : user_ref, **resp[0]}, desired_outcome="str")
-    )
+    return member
 
 # FIXME: This endpoint is not properly secure, any user can look up a member of any community regardless of whether or not they are part of said community
 # FIXME: This endpoint will require pagination for better use in the future probably
@@ -201,30 +180,68 @@ async def get_member_by_id(
 async def get_member_list(
     auth_user_id : Annotated[str, Depends(X_USER_HEADER)],
     community_id : str,
-) -> List[MemberWithEmbeddedUser]:
+) -> List[FullMember]:
 
     db = await get_database()
 
-    pipeline = db.get_collection("members").aggregate(
-        [
-            {
-                "$match" : {
-                    "community_id" : ObjectId(community_id)
-                }
-            },
-            {
-                "$lookup" : {
-                    "from" : "users",
-                    "localField" : "user_id",
-                    "foreignField" : "_id",
-                    "as" : "found_user_records"
+    pipeline = db.get_collection("members").aggregate([
+        {
+            "$match" : {
+                "community_id" : ObjectId(community_id)
+            }
+        },
+        {
+            "$lookup" : {
+                "from" : "users",
+                "localField" : "user_id",
+                "foreignField" : "_id",
+                "as" : "found_user_records"
+            }
+        },
+        {
+            "$lookup" : {
+                "from" : "communities",
+                "let" : {
+                    "user_role_ids" : "$role_ids"
+                },
+                "pipeline" : [
+                    {"$unwind" : "$roles"},
+                    {
+                        "$match" : {
+                            "$expr" : {"$in" : ["$roles.id", "$$user_role_ids"]}
+                        }
+                    },
+                    {
+                        "$project" : {
+                            "_id" : 0,
+                            "roles" : "$roles"
+                        }
+                    }
+                ],
+                "as" : "roles"
+            }
+        },
+        {
+            "$addFields" : { # flattens the nested group stuff
+                "roles" : {
+                    "$map" : {
+                        "input" : "$roles",
+                        "as" : "g",
+                        "in" : "$$g.group"
+                    }
                 }
             }
-        ]
-    )
+        }
+    ])
 
-    return [MemberWithEmbeddedUser(
-        **objectid_fix({"user" : u['found_user_records'][0], **u}, desired_outcome="str")
+    
+
+    return [FullMember(
+        **objectid_fix({
+            "user" : u["found_user_records"][0],
+            "roles" : [Role(**objectid_fix(**ur, desired_outcome="str")) for ur in u['roles']],
+            **u
+        }, desired_outcome="str")
     ) async for u in pipeline]
 
 __all__ = [router]

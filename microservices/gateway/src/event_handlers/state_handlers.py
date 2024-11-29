@@ -35,11 +35,20 @@ def util_get_member_redis_channels(community_id : str, user_id : Optional[str] =
         f"member_modified.{community_id}.{user_id}"
     ]
 
+def util_get_role_channels(community_id : str):
+    return [
+        f"role.created.{community_id}.*",
+        f"role_deleted.{community_id}.*",
+        f"role_modified.{community_id}.*",
+        f"role_reorder.{community_id}"
+    ]
+
 def util_get_all_redis_channels(community_id : str):
     return [
         *util_get_community_redis_channels(community_id),
         *util_get_channel_redis_channels(community_id),
-        *util_get_member_redis_channels(community_id)
+        *util_get_member_redis_channels(community_id),
+        *util_get_role_channels(community_id)
     ]
 
 # endregion

@@ -5,6 +5,11 @@ from json import loads
 from bson import ObjectId
 import re
 
+from .models import FullMember
+from delve_common._db._database import get_database
+from delve_common._types._dtos._communities._role import Role
+from delve_common.permissions import Permissions
+
 def dump_basemodel_to_json_bytes(m : BaseModel, *, encoding : str = 'utf-8') -> bytes:
     return m.model_dump_json().encode(encoding)
 
@@ -58,6 +63,9 @@ def objectid_fix(d : dict, *, desired_outcome : Literal["oid", "str"] = "oid") -
 
         elif isinstance(v, dict):
             tmp[k] = objectid_fix(v, desired_outcome=desired_outcome)
+
+        elif isinstance(v, list):
+            tmp[k] = [objectid_fix(vi, desired_outcome=desired_outcome) for vi in v]
 
         else:
             tmp[k] = v
@@ -165,5 +173,85 @@ class MessageQueryBuilder(object):
 
         return steps
 
+class MemberNotFound(Exception):
+    pass
 
-        
+async def get_full_member(
+    user_id : str,
+    community_id : str
+) -> FullMember:
+    
+    # Get the database singleton
+    db = await get_database()
+
+    u = await db.get_collection("members").aggregate([
+        {
+            "$match" : {
+                "community_id" : ObjectId(community_id),
+                "user_id" : ObjectId(user_id)
+            }
+        },
+        {
+            "$lookup" : {
+                "from" : "users",
+                "localField" : "user_id",
+                "foreignField" : "_id",
+                "as" : "found_user_records"
+            }
+        },
+        {
+            "$lookup" : {
+                "from" : "communities",
+                "let" : {
+                    "user_role_ids" : "$role_ids"
+                },
+                "pipeline" : [
+                    {"$unwind" : "$roles"},
+                    {
+                        "$match" : {
+                            "$expr" : {"$in" : ["$roles.id", "$$user_role_ids"]}
+                        }
+                    },
+                    {
+                        "$project" : {
+                            "_id" : 0,
+                            "roles" : "$roles"
+                        }
+                    }
+                ],
+                "as" : "roles"
+            }
+        },
+        {
+            "$addFields" : { # flattens the nested group stuff
+                "roles" : {
+                    "$map" : {
+                        "input" : "$roles",
+                        "as" : "g",
+                        "in" : "$$g.group"
+                    }
+                }
+            }
+        }
+    ]).to_list()
+
+    if not u:
+        raise MemberNotFound
+    
+    u = u[0]
+
+    user_ref = u["found_user_records"][0]
+    del u["found_user_records"][0]
+
+    roles = [Role(**objectid_fix(**g, desired_outcome="str")) for g in u["roles"]]
+    del u["roles"]
+
+    return FullMember(
+        **objectid_fix({
+            "user" : user_ref,
+            "roles" : roles,
+            **u
+        },
+        desired_outcome="str"
+        )
+    )

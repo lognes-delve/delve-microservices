@@ -142,6 +142,10 @@ async def websocket_gateway(
         "community_message_deleted",
         "community_message_modified",
         "community_message_ping",
+        "role_created",
+        "role_deleted",
+        "role_modified",
+        "role_positions_changed",
         "heartbeat_request"
     )
 
