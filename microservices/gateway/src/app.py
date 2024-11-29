@@ -17,6 +17,7 @@ from .messages import HeartbeatRequest, HeartbeatResponse, StateResponse, StateR
 from .auth import get_cookie_or_token, process_jwt_token
 
 from .event_handlers.state_handlers import (
+    heartbeat_response_handler,
     update_view_state,
     joined_community_handler,
     left_community_handler,
@@ -121,6 +122,7 @@ async def websocket_gateway(
     event_handler = EventHandler(gateway_state=gateway_state)
     event_handler.add_event_forward("state_request")
 
+    event_handler.register_handler("heartbeat_response", heartbeat_response_handler)
     event_handler.register_handler("state_response", update_view_state)
     event_handler.register_handler("joined_community", joined_community_handler)
     event_handler.register_handler("left_community", left_community_handler)

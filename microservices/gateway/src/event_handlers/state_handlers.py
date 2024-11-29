@@ -1,8 +1,12 @@
+from datetime import UTC, datetime
 from typing import Optional
+
+from bson import ObjectId
 from ..models import GatewayState
 from copy import copy
 from .ack import assert_gateway_readiness
 from ..messages import (
+    HeartbeatResponse,
     StateResponse, 
     StateRequest
 )
@@ -12,6 +16,8 @@ from delve_common._messages.communities import (
     CommunityCreatedEvent,
     JoinedCommunityEvent
 )
+from delve_common._db._database import get_database
+
 
 # region Util
 
@@ -131,3 +137,14 @@ async def community_created_handler(d : dict, gateway_state : GatewayState) -> N
 
     if resp.community.owner_id == gateway_state.user_id:
         await gateway_state.pubsub.psubscribe(*util_get_all_redis_channels(resp.community_id))
+
+async def heartbeat_response_handler(d : dict, gateway_state : GatewayState) -> None:
+
+    resp = HeartbeatResponse(**d)
+
+    db = await get_database()
+
+    await db.get_collection("users").update_one(
+        {"_id" : ObjectId(gateway_state.user_id)},
+        {"last_seen" : datetime.now(tz=UTC)}
+    )
